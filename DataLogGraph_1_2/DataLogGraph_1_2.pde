@@ -9,24 +9,24 @@
  *    unless run = false 
  */
  
-///////////////////////////////////////// Imports/////////////////////////////////
+///////////////////////////////////////// Imports///////////////////////////////
 import org.gicentre.utils.gui.TextPopup; // for warning window
 import org.gicentre.utils.stat.*;    // For chart classes.
 import org.gicentre.utils.multisketch.*; // for integration window
 import controlP5.*;
 import processing.serial.*;
 import java.io.*;                        // this is needed for BufferedWriter
-/////////////////////////////////////////Classes//////////////////////////////////
+/////////////////////////////////////////Classes////////////////////////////////
 XYChart lineChart;  
 
 ControlP5 cp5,cp5b,cp5c;
 Serial serial;
 //Textarea myTextarea;   // com port and status window
-Textarea myTextarea2;   // save file path window
+Textarea myTextarea2;    // save file path window
 
 DropdownList ports;              //Define the variable ports and mode as a Dropdownlist.
-//DropdownList ports, mode;              //Define the variable ports and mode as a Dropdownlist.
-//////////////////////////////////variables//////////////////////
+//DropdownList ports, mode;      //Define the variable ports and mode as a Dropdownlist.
+//////////////////////////////////variables/////////////////////////////////////
 
 char[] strtochar;
 //char cData;
@@ -71,14 +71,14 @@ float[] newI1 = {0};
 float[] newI2 = {0};
 float[] newIdif = {0};
 */
-//////////////font variables///////////////////////////////
-  PFont font = createFont("arial", 20);
-  PFont font2 = createFont("arial", 16);
-  PFont font3 = createFont("arial",12); 
-  PFont font4 = createFont("andalus",16);
-/////////////// setup ////////////////////////////////////////
-void setup() {
-
+//////////////font variables////////////////////////////////////////////////////
+PFont font = createFont("arial", 20);
+PFont font2 = createFont("arial", 16);
+PFont font3 = createFont("arial",12); 
+PFont font4 = createFont("andalus",16);
+/////////////// setup //////////////////////////////////////////////////////////
+void setup()
+{
   setup_bangs();
   charts_gic_setup();
   myTextarea2 = cp5.addTextarea("txt2")  // status and com port text area
@@ -88,14 +88,14 @@ void setup() {
           .setLineHeight(10)
             .setColor(#030302)
               .setColorBackground(#CEC6C6)
-                .setColorForeground(#AA8A16)//#CEC6C6                 
+                .setColorForeground(#AA8A16)//#CEC6C6
                     ;
-    frameRate(2000);
+  frameRate(2000);
   size(730, 550); 
-//  textFont(font2);
-//  frame.setResizable(true);
+  //textFont(font2);
+  //frame.setResizable(true);
 
-//////////////////////////////////////////Dropdownlist////////////////////////////////////////
+//////////////////////////////////////////Dropdownlist//////////////////////////
   ports = cp5.addDropdownList("list-1", 10, 30, 100, 84)
     .setBackgroundColor(color(200))
       .setItemHeight(10) 
@@ -112,131 +112,136 @@ void setup() {
   for (int i=0; i< comList.length; i++)
   {
     ports.addItem(comList[i], i);
-  } 
- }
-///////////////////End Setup/////////////////////////////
+  }
+}
+///////////////////End Setup////////////////////////////////////////////////////
 
 
-void draw() {
+void draw()
+{
+  background(0);
+  textFont(font4,18);
+  pushMatrix();
+  fill(#DEC507);
+  text("Smoky Mountain",30,height-65);
+  text("Scientific",58,height-50);
+  popMatrix(); 
+  pushMatrix();
+  textFont(font,12);
 
-background(0);
- 
-textFont(font4,18); 
-
-pushMatrix();
- fill(#DEC507);
-text("Smoky Mountain",30,height-65);
- text("Scientific",58,height-50);
- popMatrix(); 
- pushMatrix();
- textFont(font,12);
-
- fill(#DEC507);
- text("https://github.com/WheeSci",20,height-23);
- popMatrix(); 
- textFont(font2);
- 
-fill(#EADFC9);               // background color
-//  noStroke();    
- rect(200, 70, 475, 450);    // chart background
- fill(250,250,250);             //Chart heading color
-    textSize(16);
-    text("Titration Data", 220, 60);
-//    lineChart.draw(220, 70, 430, 430);    //early lineChart
-    
-/*    }
-        catch(Exception e){
-      if(V.length >2){
-        V = subset(V,1);
-        I1= subset(I1,1);
-        I2= subset(I2,1);
-        Idif = subset(Idif,1);
-        println("exception");  
-*/
-if (run == true) {        
+  fill(#DEC507);
+  text("https://github.com/WheeSci",20,height-23);
+  popMatrix(); 
+  textFont(font2);
+  
+  fill(#EADFC9);               // background color
+  //noStroke();
+  rect(200, 70, 475, 450);    // chart background
+  fill(250,250,250);             //Chart heading color
+  textSize(16);
+  text("Titration Data", 220, 60);
+  //lineChart.draw(220, 70, 430, 430);    //early lineChart
+  /*
+  try{;}
+  catch(Exception e){
+    if(V.length >2)
+    {
+      V  = subset(V,1);
+      I1 = subset(I1,1);
+      I2 = subset(I2,1);
+      Idif = subset(Idif,1);
+      println("exception");
+    }
+  }
+  */
+  if (run == true)
+  {
     println("begin run");   // shows up in bottom window
+    //println(160);         // Go = 1
+    // moved up
+    delay(100);
+    //serial.write(Go);
+    serial.write('2');             // value of 2 added to prevent non-specific trigger
+    //println(165);
+    i=0;  //  p=0;                 // global variable, iterate serial read and initiate chart draw
+    updatechart = i;               // update graph every 2 data
+    logData(file1, "", false);     // log data to file 1, do not append, start new file
     
-      println(163);         // Go = 1
-      // moved up
-      delay(100);
-
-//serial.write(Go);   
-serial.write('2');     // value of 2 added to prevent non-specific trigger
-
-  println(169);//////////////////// read serial data ////////////////
-       i=0;  //  p=0;                        // global variable, iterate serial read and initiate chart draw.
-         updatechart = i;           // update graph every 2 data
-        logData(file1, "", false);     // log data to file 1, do not append, start new file
-
-          while (cData!='&'&& cData !='@') {         ////////read parameter input until LaunchPad transmits '&'/////////
-      
-            if (serial.available () <= 0) {  }
-
-            if (serial.available() > 0) { 
-              cData =  serial.readChar();     // cData is character read from serial comm. port
-              sData2 = str(cData);                //sData2  is string of cData 
-              logData(file1, sData2, true);     // at this point we are logging the parameters
-
-           if (cData == '&') {             //  Launchpad sends & char at end of serial write
-                 println("parameters received");
-                 gotparams = true;  
-      //        delay(500);   
-                   }}
- }  // end of while loop with params
-                   
- while (cData !='@') {         ////////read parameter input until LaunchPad transmits '@'/////////
-   
-            if (serial.available () <= 0) {  }
-
-            if (serial.available() > 0) { 
-              cData =  serial.readChar();     // cData is character read from serial comm. port
-              sData2 = str(cData);                //sData2  is string of cData 
-              logData(file1, sData2, true);     // at this point we are logging data
-              strtochar = sData2.toCharArray();
-   //           read_serial();                   // inserted Nov 16-JSS, gave null pointer exception
-            if (cData == '@') {
-              run = false;    // stops program
-              println("stop-189");
-              gotparams = false;
-              myTextarea2.setColor(#036C09);
-              myTextarea2.setText("FINISHED");
-           }
-         // }   }    /// end of while (cData not @) loop
-  //          }
-
-       println(206);     
-   //////////// graph data //////////////////////////////////////////////
- if (run == true) {  // redundant?-no.  graph does not update after @
- read_serial(); 
- } 
-       println(210);    
-     if (V.length>12 && V.length==I1.length) { 
-         print("maxI = ");
-         println(max(I1));    
-      
-            //    if(i>=updatechart+2){
-                lineChart.setMaxX(max(V));
-                lineChart.setMaxY(max(I1)); 
-                lineChart.setMinX(min(V));
-                lineChart.setMinY(min(I1));  
-                lineChart.setData(V, I1);  
-                try{  
-//                lineChart.draw(230, 120, 450, 450);
-                 lineChart.draw(220, 70, 430, 430);
-                }
-                catch(Exception e){
-                  if(V.length >2){
-                    V = subset(V,1);
-                    I1= subset(I1,1);
-                    println("exception");  
-                  } 
-                }
-                updatechart = i;
-                }   // End of if (V.length stuff
-              }     // end of if serial.available 
-             }       /// end of while (cData not @) loop
-          }          // end of if run = true
+    ////////read parameter input until LaunchPad transmits '&'/////////
+    while (cData!='&'&& cData !='@')
+    {         
+        if (serial.available () <= 0) {}
+        if (serial.available() > 0)
+        {
+          cData =  serial.readChar();     // cData is character read from serial comm. port
+          sData2 = str(cData);            //sData2  is string of cData 
+          logData(file1, sData2, true);   // at this point we are logging the parameters
+          if (cData == '&')               //  Launchpad sends & char at end of serial write
+          {
+            println("parameters received");
+            gotparams = true;
+            //delay(500);
+          }
+        }
+    }  // end of while loop with params
+    
+    ////////read parameter input until LaunchPad transmits '@'/////////
+    while (cData !='@')
+    {
+      if (serial.available () <= 0) {}
+      if (serial.available() > 0)
+      {
+        cData =  serial.readChar();       // cData is character read from serial comm. port
+        sData2 = str(cData);              // sData2  is string of cData 
+        logData(file1, sData2, true);     // at this point we are logging data
+        strtochar = sData2.toCharArray();
+        //read_serial();                  // inserted Nov 16-JSS, gave null pointer exception
+        if (cData == '@')
+        {
+          run = false;    // stops program
+          println("stop-189");
+          gotparams = false;
+          myTextarea2.setColor(#036C09);
+          myTextarea2.setText("FINISHED");
+        }
+        //FIXME: what are these braces really supposed to end?  Get rid of them if possible. - CWV
+        //}   }    /// end of while (cData not @) loop
+        //          }
+        //println(210);
+        //////////// graph data //////////////////////////////////////////////
+        if (run == true) // redundant?-no.  graph does not update after @
+        {
+          read_serial();
+        }
+        //println(216);
+        if (V.length>12 && V.length==I1.length)
+        {
+          print("maxI = ");
+          println(max(I1));
+          //if(i>=updatechart+2){ //FIXME: be careful uncommenting, there is no matching brace? - CWV
+          lineChart.setMaxX(max(V));
+          lineChart.setMaxY(max(I1));
+          lineChart.setMinX(min(V));
+          lineChart.setMinY(min(I1));
+          lineChart.setData(V, I1);
+          try
+          {
+            //lineChart.draw(230, 120, 450, 450);
+            lineChart.draw(220, 70, 430, 430);
+          }
+          catch(Exception e)
+          {
+            if(V.length >2)
+            {
+              V = subset(V,1);
+              I1= subset(I1,1);
+              println("exception");
+            }
+          }
+          updatechart = i;
+        } // End of if (V.length stuff
+      } // end of if serial.available 
+    } /// end of while (cData not @) loop
+  } // end of if run = true
   lineChart.draw(220, 70, 430, 430);   //moving this in one bracket does not work.
-  }  
-
-
+}
