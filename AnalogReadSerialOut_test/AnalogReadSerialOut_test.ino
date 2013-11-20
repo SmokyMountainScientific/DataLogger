@@ -19,7 +19,7 @@ modified November 16, 2013
  */
 
 const int analogInPin = A0;  // Analog input pin that the potentiometer is attached to
-const int analogOutPin = P1_6; // Analog output pin that the LED is attached to
+const int analogOutPin = PD_0; // Analog output pin that the LED is attached to
 
 int sensorValue = 0;        // value read from the pot
 int outputValue = 0;        // value output to the PWM (analog out)

@@ -34,7 +34,8 @@ String sData3 ="";
 //String[] sData = new String[3];  //String sData;
 float[] V = {0};
 float[] I1 = {0};
-
+float[] newV = {0};   // added to reset V after each run Nov 19 BH
+float[] newI1 = {0};  // added to reset I1 after each run Nov 19 BH
 
 int Ss;                          //The dropdown list will return a float value, which we will connvert into an int. we will use this int for that).
 String[] comList ;               //A string to hold the ports in.
@@ -140,7 +141,7 @@ void draw()
   fill(250,250,250);             //Chart heading color
   textSize(16);
   text("Titration Data", 220, 60);
-  //lineChart.draw(220, 70, 430, 430);    //early lineChart
+  lineChart.draw(220, 70, 430, 430);    //early lineChart
   /*
   try{;}
   catch(Exception e){
@@ -156,37 +157,42 @@ void draw()
   */
   if (run == true)
   {
-    println("begin run");   // shows up in bottom window
-    //println(160);         // Go = 1
-    // moved up
-    delay(100);
-    //serial.write(Go);
-    serial.write('2');             // value of 2 added to prevent non-specific trigger
-    //println(165);
-    i=0;  //  p=0;                 // global variable, iterate serial read and initiate chart draw
-    updatechart = i;               // update graph every 2 data
-    logData(file1, "", false);     // log data to file 1, do not append, start new file
-    
-    ////////read parameter input until LaunchPad transmits '&'/////////
-    while (cData!='&'&& cData !='@')
-    {         
-        if (serial.available () <= 0) {}
-        if (serial.available() > 0)
-        {
-          cData =  serial.readChar();     // cData is character read from serial comm. port
-          sData2 = str(cData);            //sData2  is string of cData 
-          logData(file1, sData2, true);   // at this point we are logging the parameters
-          if (cData == '&')               //  Launchpad sends & char at end of serial write
+    if(gotparams == false)   // added to update chart in real time Nov19 BH
+    {
+      println("begin run");   // shows up in bottom window
+      //println(160);         // Go = 1
+      // moved up
+      delay(100);
+      //serial.write(Go);
+      serial.write('2');             // value of 2 added to prevent non-specific trigger
+      //println(165);
+      V = newV;
+      I1 = newI1;
+      i=0;  //  p=0;                 // global variable, iterate serial read and initiate chart draw
+      updatechart = i;               // update graph every 2 data
+      logData(file1, "", false);     // log data to file 1, do not append, start new file
+      
+      ////////read parameter input until LaunchPad transmits '&'/////////
+      while (cData!='&'&& cData !='@')
+      {         
+          if (serial.available () <= 0) {}
+          if (serial.available() > 0)
           {
-            println("parameters received");
-            gotparams = true;
-            //delay(500);
+            cData =  serial.readChar();     // cData is character read from serial comm. port
+            sData2 = str(cData);            //sData2  is string of cData 
+            logData(file1, sData2, true);   // at this point we are logging the parameters
+            if (cData == '&')               //  Launchpad sends & char at end of serial write
+            {
+              println("parameters received");
+              gotparams = true;
+              //delay(500);
+            }
           }
-        }
-    }  // end of while loop with params
+      }  // end of while loop with params
+  } // end if gotparam == false   Nov 19 BH
     
     ////////read parameter input until LaunchPad transmits '@'/////////
-    while (cData !='@')
+    if (cData !='@')  // changed to if so will update in real time
     {
       if (serial.available () <= 0) {}
       if (serial.available() > 0)
@@ -203,6 +209,8 @@ void draw()
           gotparams = false;
           myTextarea2.setColor(#036C09);
           myTextarea2.setText("FINISHED");
+          println(gotparams);
+          cData = 'a';  // added so run will reset Nov 19 BH
         }
         //FIXME: what are these braces really supposed to end?  Get rid of them if possible. - CWV
         //}   }    /// end of while (cData not @) loop
@@ -224,10 +232,10 @@ void draw()
           lineChart.setMinX(min(V));
           lineChart.setMinY(min(I1));
           lineChart.setData(V, I1);
-          try
+         /* try
           {
             //lineChart.draw(230, 120, 450, 450);
-            lineChart.draw(220, 70, 430, 430);
+            //lineChart.draw(220, 70, 430, 430);
           }
           catch(Exception e)
           {
@@ -237,11 +245,11 @@ void draw()
               I1= subset(I1,1);
               println("exception");
             }
-          }
+          } */
           updatechart = i;
         } // End of if (V.length stuff
       } // end of if serial.available 
     } /// end of while (cData not @) loop
   } // end of if run = true
-  lineChart.draw(220, 70, 430, 430);   //moving this in one bracket does not work.
+  //lineChart.draw(220, 70, 430, 430);   //moving this in one bracket does not work.
 }
